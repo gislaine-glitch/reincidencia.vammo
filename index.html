@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Reincidência OS — Semana 26/05–01/06/2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #1a1a2e; font-size: 13px; }
+header { background: #1a1a2e; color: #fff; padding: 18px 28px; }
+header h1 { font-size: 18px; font-weight: 700; }
+header p { font-size: 12px; opacity: .55; margin-top: 3px; }
+.tabs { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #eee; padding: 0 28px; }
+.tab { padding: 12px 20px; font-size: 13px; font-weight: 600; cursor: pointer; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+.view { display: none; }
+.view.active { display: block; }
+/* Dashboard */
+.dash-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.dash-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media(max-width:800px){ .dash-grid2,.dash-grid3{ grid-template-columns:1fr; } }
+.card { background: #fff; border-radius: 8px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.card h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #999; margin-bottom: 14px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; }
+.bar-row .lbl { width: 155px; flex-shrink: 0; color: #444; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-wrap { flex: 1; background: #f0f0f0; border-radius: 3px; height: 16px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.bar-row .cnt { width: 32px; text-align: right; color: #aaa; font-size: 10px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+.kpis { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.kpi { background: #fff; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); min-width: 130px; }
+.kpi .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #999; margin-bottom: 4px; }
+.kpi .val { font-size: 24px; font-weight: 700; }
+.kpi .val.red { color: #e63946; }
+.kpi .val.amber { color: #e07b00; }
+.kpi .sub { font-size: 10px; color: #bbb; margin-top: 2px; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+input[type=text] { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; width: 220px; outline: none; }
+input[type=text]:focus { border-color: #1a1a2e; }
+.btn { padding: 5px 13px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; color: #555; }
+.btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+.count-label { font-size: 12px; color: #888; margin-left: auto; }
+.alert { background: #fff8e6; border-left: 4px solid #e07b00; border-radius: 6px; padding: 10px 14px; font-size: 12px; margin-bottom: 16px; color: #6d4000; }
+.alert strong { display: block; margin-bottom: 3px; font-size: 12px; }
+/* Problem tags */
+.tag { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; margin: 1px 2px; white-space: nowrap; }
+.tag-freio { background: #fde8e8; color: #c0392b; }
+.tag-carenagem { background: #fef3cd; color: #856404; }
+.tag-direcao { background: #d1ecf1; color: #0c5460; }
+.tag-pneu { background: #d4edda; color: #155724; }
+.tag-eletrica { background: #e8d5f5; color: #6a1b9a; }
+.tag-motor { background: #fde8d0; color: #7d3c00; }
+.tag-chave { background: #dce8f5; color: #1a4a7a; }
+.tag-amortecedor { background: #e0f0e8; color: #1a5c35; }
+.tag-estrutura { background: #f0e6d3; color: #6b4226; }
+.tag-acidente { background: #ffd6d6; color: #8b0000; }
+.tags-row { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px; }
+
+/* Card per client */
+.client-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.07); margin-bottom: 10px; overflow: hidden; }
+.client-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; }
+.client-header:hover { background: #fafbff; }
+.client-name { font-weight: 700; font-size: 13px; flex: 1; }
+.badge-qtd { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.badge-3 { background: #fde8ea; color: #c0392b; }
+.badge-2 { background: #fff3cd; color: #856404; }
+.badge-postman { background: #d4edda; color: #155724; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.badge-warn { background: #fde8ea; color: #c0392b; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.chevron { font-size: 11px; color: #aaa; transition: transform .2s; }
+.chevron.open { transform: rotate(90deg); }
+
+.os-list { border-top: 1px solid #f2f2f2; display: none; }
+.os-item { padding: 8px 14px 8px 28px; border-bottom: 1px solid #f7f7f7; display: flex; gap: 12px; }
+.os-item:last-child { border-bottom: none; }
+.os-meta { display: flex; flex-direction: column; gap: 3px; min-width: 160px; }
+.os-id { font-family: monospace; font-size: 11px; color: #888; }
+.os-date { font-size: 11px; color: #aaa; }
+.os-ativo { font-family: monospace; font-size: 10px; color: #bbb; }
+.os-tipo { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-top: 2px; }
+.tipo-CORRECTIVE { background: #e8f0fe; color: #1a73e8; }
+.tipo-FAST_REPAIR { background: #f0f0f0; color: #555; }
+.tipo-CORRECTIVE_LOCO { background: #fef3cd; color: #856404; }
+.os-problems { flex: 1; }
+.os-problems ul { margin: 0; padding-left: 16px; }
+.os-problems li { color: #444; line-height: 1.5; }
+.os-problems .empty { color: #bbb; font-style: italic; }
+.warn-item { color: #c0392b !important; font-weight: 600; }
+
+/* Visible count */
+#visibleCount { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+<header style="display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <h1>🔁 Reincidência de OS — Semana 26/05 a 01/06/2026</h1>
+    <p>51 clientes com 2+ OS corretivas · CORRECTIVE + FAST_REPAIR + CORRECTIVE_LOCO</p>
+  </div>
+  <button onclick="openModal()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap">📋 Contexto</button>
+</header>
+<!-- MODAL -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;max-width:680px;width:90%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="background:#1a1a2e;color:#fff;padding:18px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:15px;font-weight:700">📋 Contexto da análise</div>
+        <div style="font-size:11px;opacity:.55;margin-top:2px">O que construímos + o que foi solicitado</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;opacity:.7;line-height:1">✕</button>
+    </div>
+    <div style="padding:22px">
+
+      <!-- O que construímos -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px">O que construímos</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:#f7f8fa;border-radius:7px;padding:10px 13px;font-size:12px;line-height:1.6">
+            <b>📊 Dashboard de reincidência (semana 26–31/05)</b><br>
+            Análise das 780 OS corretivas com taxa de reincidência de 7,7% — 51 clientes que abriram 2+ OS na mesma semana, gerando 110 OS. Inclui ranking de problemas mais frequentes, distribuição por dia e identificação de 8 casos com queixa explícita pós-manutenção.
+          </div>
+          <div style="background:#f7f8fa;border-radius:7px;padding:10px 13px;font-size:12px;line-height:1.6">
+            <b>📋 Lista dos 51 casos com problemas detalhados</b><br>
+            Cada cliente reincidente tem suas OS expandíveis com todos os problemas registrados, tipo de OS e ativo. Filtros por nº de OS, tipo e busca livre. Casos pós-manutenção sinalizados em vermelho.
+          </div>
+          <div style="background:#f7f8fa;border-radius:7px;padding:10px 13px;font-size:12px;line-height:1.6">
+            <b>🏭 Backlog por unidade (atualizado 03/06)</b><br>
+            617 OS em aberto nas 3 unidades: Mooca 1 (323), Osasco (250), SBC (44). Principal gargalo: AWAITING_CX = 228 OS (37% do backlog). Osasco tem 41 OS aguardando peças — pior proporção das três.
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+
+      <!-- Mensagem do Chalela -->
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px">O que foi solicitado — mensagem do Chalela</div>
+        <div style="background:#fffbf0;border-left:4px solid #f4a261;border-radius:0 7px 7px 0;padding:12px 14px;font-size:12px;color:#444;line-height:1.7;margin-bottom:14px;font-style:italic">
+          "Cada vez mais eu acho recorrência de 7 dias muito pouco tempo. Todos os nossos serviços ou peças duram mais que 30 dias na média, sendo pastilha o limitante inferior aqui. Olhar para recorrência de 7 dias é olhar só para erro grosseiro e não necessariamente qualidade."
+        </div>
+        <div style="font-size:12px;color:#333;line-height:1.7;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="background:#e8f0fe;color:#1a73e8;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+            <span><b>Métrica geral de reincidência em 3 janelas:</b> 7 / 15 / 30 dias, sem limpeza. A ideia é que o ruído (acidentes, desgaste normal) é estável no tempo e permite ver a tendência de qualidade.</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="background:#e8f0fe;color:#1a73e8;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:normal;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;justify-content:center">2</span>
+            <span><b>Métrica de reincidência por grupo de problema</b> (também em 7/15/30 dias), usando AI para inferir similaridade entre OS — cruzando relato do cliente, comentário do mecânico e peças trocadas. Hoje é tricky pq os reports são conflitantes.</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="background:#e8f0fe;color:#1a73e8;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
+            <span><b>Qualidade vai melhorar com padronização:</b> com mais informação estruturada na abertura da OS, a classificação automática fica mais precisa.</span>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;background:#f0faf5;border-radius:7px;padding:10px 13px;font-size:12px;color:#1a6b3c;line-height:1.6">
+          <b>💡 O que precisamos para a reunião:</b> histórico de OS com janela de 30+ dias para montar a série temporal das 3 janelas, e definir o critério de agrupamento de problemas para a métrica classificada por AI.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dash',this)">📊 Dashboard</div>
+  <div class="tab" onclick="switchTab('lista',this)">📋 51 Casos</div>
+  <div class="tab" onclick="switchTab('backlog',this)">🏭 Backlog por Unidade</div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="view-dash" class="view active">
+<div class="container">
+
+  <!-- Date filter bar -->
+  <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:700;color:#555">📅 Período:</span>
+    <input type="date" id="dateFrom" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px" onchange="updateDash()">
+    <span style="font-size:12px;color:#aaa">até</span>
+    <input type="date" id="dateTo" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px" onchange="updateDash()">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn active" id="btn-all" onclick="setDatePreset('all',this)">Tudo</button>
+      <button class="btn" id="btn-w1" onclick="setDatePreset('w1',this)">Sem 04/05</button>
+      <button class="btn" id="btn-w2" onclick="setDatePreset('w2',this)">Sem 11/05</button>
+      <button class="btn" id="btn-w3" onclick="setDatePreset('w3',this)">Sem 18/05</button>
+      <button class="btn" id="btn-w4" onclick="setDatePreset('w4',this)">Sem 25/05</button>
+      <button class="btn" id="btn-w5" onclick="setDatePreset('w5',this)">Sem 01/06</button>
+    </div>
+    <span id="dash-period-label" style="font-size:11px;color:#aaa;margin-left:auto"></span>
+  </div>
+
+  <!-- KPIs dinâmicos -->
+  <div class="kpis">
+    <div class="kpi"><div class="lbl">Total OS</div><div class="val" id="kpi-total">—</div><div class="sub" id="kpi-total-sub"></div></div>
+    <div class="kpi"><div class="lbl">OS Corretivas</div><div class="val" id="kpi-corr">—</div><div class="sub" id="kpi-corr-sub"></div></div>
+    <div class="kpi"><div class="lbl">Clientes únicos</div><div class="val" id="kpi-clients">—</div><div class="sub">com corretiva</div></div>
+    <div class="kpi"><div class="lbl">Taxa reincidência*</div><div class="val red" id="kpi-taxa">—</div><div class="sub" id="kpi-taxa-sub" style="font-size:9px">*7 dias, sem limpeza</div></div>
+    <div class="kpi"><div class="lbl">OS reincidentes</div><div class="val amber" id="kpi-os-reincid">—</div><div class="sub" id="kpi-os-reincid-sub"></div></div>
+    <div class="kpi"><div class="lbl">Backlog acumulado</div><div class="val red" id="kpi-backlog">—</div><div class="sub" id="kpi-backlog-sub"></div></div>
+  </div>
+
+  <div class="dash-grid2">
+    <div class="card"><h2>Volume de OS por dia</h2><canvas id="chartDias" height="200"></canvas></div>
+    <div class="card"><h2>Problemas mais frequentes (corretivas)</h2><canvas id="chartProblemas" height="200"></canvas></div>
+  </div>
+  <div class="dash-grid2">
+    <div class="card"><h2>OS por unidade (período)</h2><canvas id="chartUnidade" height="200"></canvas></div>
+    <div class="card"><h2>Backlog acumulado por dia</h2><canvas id="chartBacklog" height="200"></canvas></div>
+  </div>
+  <div class="dash-grid2" style="margin-bottom:14px">
+    <div class="card"><h2>🔁 Tipo de problema com maior reincidência (sem 26/05)</h2><canvas id="chartReincidCat" height="220"></canvas></div>
+    <div class="card"><h2>Reincidência semanal — taxa %</h2><canvas id="chartPizza" height="220"></canvas></div>
+  </div>
+  <div class="dash-grid3">
+    <div class="card"><h2>Mix de tipos de OS</h2><canvas id="chartTipos" height="200"></canvas></div>
+    <div class="card">
+      <h2>Casos pós-manutenção (sem 26/05)</h2>
+      <div style="text-align:center;padding:12px 0">
+        <div style="font-size:48px;font-weight:700;color:#e63946">8</div>
+        <div style="font-size:11px;color:#888;margin-top:4px">clientes com queixa explícita<br>sobre atendimento anterior</div>
+        <div style="margin-top:12px;font-size:11px;color:#555;text-align:left;line-height:1.8">
+          <div>• Bruno Taylor — guidão torto saído da manut.</div>
+          <div>• Felipe Yuri — calo na direção criado na manut.</div>
+          <div>• Gabriela Martins — banco não abre após manut.</div>
+          <div>• Rhuan De Oliveira — roda trocada com defeito</div>
+          <div>• Leandro Ribeiro — guidão torto saído da manut.</div>
+          <div>• Celso De Sousa — pneu furado 3 dias após troca</div>
+          <div>• Gabriel Devechi — roda trocada e torta</div>
+          <div>• Uallace Fonseca — reincidência marcada na OS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- LISTA VIEW -->
+<div id="view-lista" class="view">
+<div class="container">
+
+  <div class="kpis">
+    <div class="kpi"><div class="lbl">Total OS semana</div><div class="val">1.548</div></div>
+    <div class="kpi"><div class="lbl">OS Corretivas</div><div class="val">780</div><div class="sub">50,4% do total</div></div>
+    <div class="kpi"><div class="lbl">Clientes únicos</div><div class="val">665</div><div class="sub">com corretiva</div></div>
+    <div class="kpi"><div class="lbl">Reincidentes</div><div class="val red">51</div><div class="sub">7,7% dos clientes</div></div>
+    <div class="kpi"><div class="lbl">OS de reincidentes</div><div class="val amber">110</div><div class="sub">14,1% das corretivas</div></div>
+    <div class="kpi"><div class="lbl">Mesmo ativo</div><div class="val red">29</div><div class="sub">pares cliente+moto</div></div>
+  </div>
+
+  <div class="alert">
+    <strong>⚠️ Reincidência pós-manutenção confirmada em pelo menos 8 casos</strong>
+    Clientes relataram explicitamente problema surgido ou agravado após atendimento anterior (guidão torto, banco que não abre, pneu furado 3 dias após troca). Destacados em vermelho abaixo.
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Buscar cliente, ativo ou problema..." oninput="applyFilters()">
+    <button class="btn active" onclick="setFilter('all',this)">Todos (51)</button>
+    <button class="btn" onclick="setFilter('3',this)">3 OS (8)</button>
+    <button class="btn" onclick="setFilter('2',this)">2 OS (43)</button>
+    <button class="btn" onclick="setFilter('postman',this)">⚠️ Pós-manutenção</button>
+    <span class="count-label" id="visibleCount">51 clientes</span>
+  </div>
+
+  <div id="cardList"></div>
+</div>
+</div><!-- /view-lista -->
+
+<!-- BACKLOG VIEW -->
+<div id="view-backlog" class="view">
+<div class="container">
+
+  <div class="kpis" style="margin-top:0">
+    <div class="kpi"><div class="lbl">Backlog total</div><div class="val red">617</div><div class="sub">atualizado 03/06</div></div>
+    <div class="kpi"><div class="lbl">Mooca 1</div><div class="val amber">323</div><div class="sub">52,4% do backlog</div></div>
+    <div class="kpi"><div class="lbl">Osasco</div><div class="val amber">250</div><div class="sub">40,5% do backlog</div></div>
+    <div class="kpi"><div class="lbl">Eletroposto SBC</div><div class="val">44</div><div class="sub">7,1% do backlog</div></div>
+    <div class="kpi"><div class="lbl">Aguardando CX</div><div class="val red">228</div><div class="sub">37% do backlog</div></div>
+    <div class="kpi"><div class="lbl">Aguardando Peças</div><div class="val amber">81</div><div class="sub">13% do backlog</div></div>
+  </div>
+
+  <div class="alert" style="background:#e8f0fe;border-left-color:#457b9d;color:#1a3a6b">
+    <strong>📈 Backlog cresceu +25% em 2 dias (492 → 617 OS)</strong>
+    Arquivo anterior era de 01/06, este é de 03/06. Osasco tem 41 OS aguardando peças — o maior gargalo de abastecimento. AWAITING_CX domina nas três unidades.
+  </div>
+
+  <div class="dash-grid3">
+    <!-- Mooca 1 -->
+    <div class="card">
+      <h2>🏢 Mooca 1 — 323 OS</h2>
+      <canvas id="chartMooca" height="200"></canvas>
+      <div style="margin-top:14px;font-size:11px;color:#555;line-height:2">
+        <div>📋 <b>Open (sem responsável):</b> 116</div>
+        <div>👤 <b>Aguardando CX:</b> 110</div>
+        <div>🔧 <b>Em andamento:</b> 20</div>
+        <div>🔩 <b>Aguardando Peças:</b> 21</div>
+        <div>🏢 <b>Aguardando gestão:</b> 15</div>
+        <div>🔍 <b>Aguardando serviço:</b> 12</div>
+        <div>🔧 <b>Ag. mecânico:</b> 15</div>
+        <div>⏸️ <b>Pausadas:</b> 11</div>
+      </div>
+    </div>
+    <!-- Osasco -->
+    <div class="card">
+      <h2>🏢 Osasco — 250 OS</h2>
+      <canvas id="chartOsasco" height="200"></canvas>
+      <div style="margin-top:14px;font-size:11px;color:#555;line-height:2">
+        <div>📋 <b>Open (sem responsável):</b> 40</div>
+        <div>👤 <b>Aguardando CX:</b> 105</div>
+        <div>🔧 <b>Em andamento:</b> 22</div>
+        <div>🔩 <b>Aguardando Peças:</b> 41</div>
+        <div>🏢 <b>Aguardando gestão:</b> 18</div>
+        <div>🔍 <b>Aguardando serviço:</b> 6</div>
+        <div>🔧 <b>Ag. mecânico:</b> 9</div>
+        <div>⏸️ <b>Pausadas:</b> 9</div>
+      </div>
+    </div>
+    <!-- SBC -->
+    <div class="card">
+      <h2>⚡ Eletroposto SBC — 44 OS</h2>
+      <canvas id="chartSBC" height="200"></canvas>
+      <div style="margin-top:14px;font-size:11px;color:#555;line-height:2">
+        <div>📋 <b>Open (sem responsável):</b> 4</div>
+        <div>👤 <b>Aguardando CX:</b> 13</div>
+        <div>🔧 <b>Em andamento:</b> 4</div>
+        <div>🔩 <b>Aguardando Peças:</b> 19</div>
+        <div>⏸️ <b>Pausadas:</b> 3</div>
+        <div>✅ <b>Aguardando QA:</b> 1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tipo de OS por unidade -->
+  <div class="dash-grid2">
+    <div class="card">
+      <h2>Tipo de OS no backlog por unidade</h2>
+      <canvas id="chartTipoBacklog" height="240"></canvas>
+    </div>
+    <div class="card">
+      <h2>Gargalos — distribuição de status</h2>
+      <canvas id="chartGargalo" height="240"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabela resumo -->
+  <div class="card" style="margin-bottom:0">
+    <h2>Tabela resumo por unidade</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px">
+      <thead>
+        <tr style="background:#f7f8fa">
+          <th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Unidade</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Total</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Corretivas</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Inspeções</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Ag. CX</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Ag. Peças</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Em andamento</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#888;border-bottom:1px solid #eee">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #f2f2f2;font-weight:700">Mooca 1</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2"><span style="background:#fde8ea;color:#c0392b;padding:2px 8px;border-radius:10px;font-weight:700">323</span></td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">169</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">131</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">110</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">21</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">20</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">116</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #f2f2f2;font-weight:700">Osasco</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2"><span style="background:#fde8ea;color:#c0392b;padding:2px 8px;border-radius:10px;font-weight:700">250</span></td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">114</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">119</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">105</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2"><b style="color:#e63946">41</b></td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">22</td>
+          <td style="text-align:center;padding:8px 10px;border-bottom:1px solid #f2f2f2">40</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;font-weight:700">Eletroposto SBC</td>
+          <td style="text-align:center;padding:8px 10px"><span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:10px;font-weight:700">44</span></td>
+          <td style="text-align:center;padding:8px 10px">32</td>
+          <td style="text-align:center;padding:8px 10px">11</td>
+          <td style="text-align:center;padding:8px 10px">13</td>
+          <td style="text-align:center;padding:8px 10px"><b style="color:#e07b00">19</b></td>
+          <td style="text-align:center;padding:8px 10px">4</td>
+          <td style="text-align:center;padding:8px 10px">4</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:10px;color:#bbb;margin-top:10px">Fonte: maestro_os_may — 03/06/2026 10h15 · Exclui COMPLETED e CANCELLED</div>
+  </div>
+
+</div>
+</div><!-- /view-backlog -->
+
+<script>
+const clientes = [{"cliente":"Alan Cardozo","qtd_os":3,"postman":true,"os_list":[{"os_id":23081,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG001RM240052","problemas":["caixa de direção solta","carenagem da seta traseira direita esta faltando m parafuso","carenagem frontal esta faltando parafuso","retirar o bau","verificar ambas bengalas, aparentemente nao esta presa corretamente"]},{"os_id":23779,"data":"28/05","tipo":"CORRECTIVE","ativo":"SVE6B81","problemas":["caixa de direção solta","Bengala solta","Porcão","Moto trepidando muito","Manete direito"]},{"os_id":24136,"data":"29/05","tipo":"CORRECTIVE","ativo":"SVE6B81","problemas":["Banco nao abre","Moto sem chave, provável que esteja dentro do banco","Carenagem do miolo do banco ja chegou quebrada","⚠️ Cliente reclamou das 2 últimas OS que a caixa de direção está ruim e as bengalas estão ruins"]}]},{"cliente":"Cristiano Avelino Dos Santos","qtd_os":3,"postman":false,"os_list":[{"os_id":22969,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG001TM262652","problemas":["Moto sem chave","Cliente relata que a moto liga mas não anda"]},{"os_id":23214,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG001TM262652","problemas":["pastilhas de freio gastas","instalar bolha"]},{"os_id":23589,"data":"27/05","tipo":"CORRECTIVE","ativo":"UGO3B32","problemas":["Cliente relata que a moto veio para manutenção terça porque estava apitando e cortando a aceleração direto","Cliente relata que os freios estão fazendo barulho de ferro"]}]},{"cliente":"Douglas Oliveira","qtd_os":3,"postman":false,"os_list":[{"os_id":23012,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA511R1000477","problemas":["Trocar disjuntor, ele esta desarmando"]},{"os_id":24182,"data":"29/05","tipo":"CORRECTIVE","ativo":"TMI8J54","problemas":["Sensor de parada do pezinho nao funciona","Seta esquerda dianteira com mau contato","cavalete central esta solto","Verificar pastilhas"]},{"os_id":24225,"data":"29/05","tipo":"FAST_REPAIR","ativo":"TMI8J54","problemas":["Mola do cavalete"]}]},{"cliente":"Jonathan Sérgio","qtd_os":3,"postman":false,"os_list":[{"os_id":23362,"data":"27/05","tipo":"CORRECTIVE","ativo":"LYSCPA513S1000311","problemas":[]},{"os_id":23829,"data":"28/05","tipo":"FAST_REPAIR","ativo":"TLK0E57","problemas":[]},{"os_id":23844,"data":"28/05","tipo":"CORRECTIVE","ativo":"TLK0E57","problemas":[]}]},{"cliente":"Marcelo Ferreira Alves","qtd_os":3,"postman":false,"os_list":[{"os_id":23052,"data":"26/05","tipo":"FAST_REPAIR","ativo":"QSY2G56","problemas":["Paralama traseiro"]},{"os_id":23762,"data":"28/05","tipo":"CORRECTIVE","ativo":"QSY2G56","problemas":["Acidente","Carenagens frontais quebradas","Mascara do farol quebrado","Verificar danos e avarias","Caixa direção torta"]},{"os_id":23788,"data":"28/05","tipo":"FAST_REPAIR","ativo":"QSX7C36","problemas":["Porta do USB"]}]},{"cliente":"Matheus Alexandre Vaz De Oliveira","qtd_os":3,"postman":true,"os_list":[{"os_id":23432,"data":"27/05","tipo":"CORRECTIVE","ativo":"LYSCPA510S1000976","problemas":["paralama traseiro solto, faltando parafuso do suporte","manete esquerdo torto","chicote B nao esta funcionando","verificar ambas pastilhas e discos, esta no ferro"]},{"os_id":24152,"data":"29/05","tipo":"CORRECTIVE","ativo":"TMC1B43","problemas":["Moto liga mas não anda","Revisão completa"]},{"os_id":24798,"data":"30/05","tipo":"CORRECTIVE","ativo":"TMC1B43","problemas":["⚠️ Moto acendendo luz vermelha e luz da injeção — retorno do mesmo ativo"]}]},{"cliente":"Rhuan De Oliveira Marques","qtd_os":3,"postman":true,"os_list":[{"os_id":24215,"data":"29/05","tipo":"CORRECTIVE","ativo":"TJD5H87","problemas":[]},{"os_id":24587,"data":"30/05","tipo":"CORRECTIVE","ativo":"TJD5H87","problemas":["⚠️ Cliente relata que trocaram a roda traseira ontem e após isso a roda fica segurando como se tivesse sem alívio na pinça traseira","⚠️ Regulagem na direção feita ontem, hoje está tremendo bastante"]},{"os_id":24857,"data":"30/05","tipo":"CORRECTIVE","ativo":"TJD5H87","problemas":["MOTO trava andar, fez barulho magnetico e a luz da injeção fica acendendo e apagando","Checar tampa do motor, checar sensor de aceleração"]}]},{"cliente":"Vinicius Emerson","qtd_os":3,"postman":false,"os_list":[{"os_id":23132,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA513S1000096","problemas":["direção com calo","pastilha","freio","revisão"]},{"os_id":23850,"data":"28/05","tipo":"FAST_REPAIR","ativo":"TMD0E85","problemas":["Pneu traseiro furado"]},{"os_id":23862,"data":"28/05","tipo":"CORRECTIVE","ativo":"TMD0E85","problemas":["Verificar pneu dianteiro"]}]},{"cliente":"Allan Augusto","qtd_os":2,"postman":false,"os_list":[{"os_id":24393,"data":"29/05","tipo":"CORRECTIVE","ativo":"TLL4F63","problemas":["Banco do passageiro solto e do motorista"]},{"os_id":24411,"data":"29/05","tipo":"CORRECTIVE","ativo":"TLL4F63","problemas":["banco do motorista soltando"]}]},{"cliente":"Anderson Jose Augusto","qtd_os":2,"postman":false,"os_list":[{"os_id":22923,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA517R1000497","problemas":["Buzina frequentemente fraca","Pastilhas gastas","Danos e avarias"]},{"os_id":23624,"data":"27/05","tipo":"CORRECTIVE","ativo":"STB4I93","problemas":[]}]},{"cliente":"Arthur Santos","qtd_os":2,"postman":false,"os_list":[{"os_id":23939,"data":"28/05","tipo":"CORRECTIVE","ativo":"UEW5I04","problemas":[]},{"os_id":24239,"data":"29/05","tipo":"CORRECTIVE","ativo":"UEW5I04","problemas":["Trocar caixa de direção"]}]},{"cliente":"Bruno Taylor Pereira","qtd_os":2,"postman":true,"os_list":[{"os_id":23188,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA515R1000305","problemas":["Pastilhas de freio gastas e fluido de freio","Caixa de direção com folga","Parafusos do baú estavam soltos"]},{"os_id":24199,"data":"29/05","tipo":"CORRECTIVE","ativo":"STW3C51","problemas":["⚠️ Cliente relata que levou a moto na manutenção em SBC porém voltou com o guidão torto e chimando — inviável pilotar","Verificar disco dianteiro","Freio traseiro duro demais, dianteiro não freia quase"]}]},{"cliente":"Caio Vinícius Almeida Rodrigues Dos Santos","qtd_os":2,"postman":false,"os_list":[{"os_id":24290,"data":"29/05","tipo":"CORRECTIVE","ativo":"UFO1J17","problemas":["Mola do pezinho","Direção com jogo"]},{"os_id":24368,"data":"29/05","tipo":"FAST_REPAIR","ativo":"UFO1J17","problemas":[]}]},{"cliente":"Celso De Sousa Brito","qtd_os":2,"postman":true,"os_list":[{"os_id":23751,"data":"28/05","tipo":"CORRECTIVE","ativo":"TMG3I96","problemas":["Erro 95","Moto dando tranco sozinha e acelerando sozinha","Pastilhas gastas","Discos gastos","Pneus gastos"]},{"os_id":24854,"data":"30/05","tipo":"FAST_REPAIR","ativo":"TMG3I96","problemas":["⚠️ Pneu traseiro furado — cliente relata que fez a manutenção 3 dias atrás onde foi trocado"]}]},{"cliente":"Christopher Thiery Gonçalves Da Silva","qtd_os":2,"postman":false,"os_list":[{"os_id":23968,"data":"28/05","tipo":"CORRECTIVE","ativo":"FLF7J31","problemas":["Ajustar caixa de direção","Guidão torto","Garfo torto"]},{"os_id":24870,"data":"30/05","tipo":"FAST_REPAIR","ativo":"FLF7J31","problemas":[]}]},{"cliente":"Daniel Dos Santos Correia","qtd_os":2,"postman":false,"os_list":[{"os_id":23089,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG003SM251928","problemas":["Pastilhas gastas","Pezinho duro","Amortecedor traseiro duro batendo seco","Banco passageiro encharcado (trocar)","Parafuso do suporte espanado"]},{"os_id":23182,"data":"26/05","tipo":"CORRECTIVE","ativo":"SUA4E14","problemas":["Trocar banco passageiro","Infiltração"]}]},{"cliente":"Daniel Oliveira Da Costa","qtd_os":2,"postman":false,"os_list":[{"os_id":22975,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG001TM262814","problemas":["Parafuso do paralama traseiro pegando no disco de freio","Verificação completa — moto era reserva realocada para o cliente"]},{"os_id":24623,"data":"30/05","tipo":"CORRECTIVE","ativo":"FPE8F82","problemas":["Troca pneu traseiro"]}]},{"cliente":"Diego Batista Lima","qtd_os":2,"postman":false,"os_list":[{"os_id":23156,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA917S1000449","problemas":["Roda traseira fazendo barulho","Freio — trocar pastilhas","Paralama quebrou por conta do problema crônico do suporte","Alinhar frente / guidão torto","USB não funciona"]},{"os_id":23258,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA917S1000449","problemas":["Tampa do motor com parafuso esgarcados","Paralama traseiro quebrado (trocar)"]}]},{"cliente":"Douglas Pimentel Silva De Mattos","qtd_os":2,"postman":false,"os_list":[{"os_id":23107,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG009TM265033","problemas":["Pastilhas gastas","Remoção do baú de 90L"]},{"os_id":24380,"data":"29/05","tipo":"CORRECTIVE","ativo":"UGR5E47","problemas":[]}]},{"cliente":"Emerson Diego Fernandes","qtd_os":2,"postman":false,"os_list":[{"os_id":23415,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG007TM263202","problemas":["Verificar roda traseira e rolamentos"]},{"os_id":24793,"data":"30/05","tipo":"CORRECTIVE","ativo":"UFS0D68","problemas":["Pneu traseiro danificado","Roda traseira danificada","Amortecedor quebrado"]}]},{"cliente":"Felipe Yuri","qtd_os":2,"postman":true,"os_list":[{"os_id":23106,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG005TM263302","problemas":["Pneu traseiro gasto","Paralama traseiro solto","Carenagem dianteira esquerda solta"]},{"os_id":23554,"data":"27/05","tipo":"CORRECTIVE","ativo":"UFR1G11","problemas":["⚠️ Cliente esteve ontem na manutenção e relata que ao sair sentiu um calo na direção enorme que não tinha antes","Paralama traseiro solto"]}]},{"cliente":"Francisco Adalberto Correa Lima Neto","qtd_os":2,"postman":false,"os_list":[{"os_id":23249,"data":"26/05","tipo":"FAST_REPAIR","ativo":"92SESG003RM240038","problemas":["Suporte do baú solto"]},{"os_id":23259,"data":"26/05","tipo":"FAST_REPAIR","ativo":"92SESG003RM240038","problemas":["Rolamento da moto"]}]},{"cliente":"Gabriel Devechi","qtd_os":2,"postman":true,"os_list":[{"os_id":23553,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG001TM263129","problemas":["⚠️ Roda traseira trocada na Mooca recente e está torta (cliente disse que a roda está descascada e não é nova)","Pastilhas de freio","USB ruim"]},{"os_id":23616,"data":"27/05","tipo":"FAST_REPAIR","ativo":"UFD5G92","problemas":["Porta do USB"]}]},{"cliente":"Gabriel Santos","qtd_os":2,"postman":false,"os_list":[{"os_id":23000,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG005RM241441","problemas":["Pastilhas de freio gastas","Verificar TWI dos pneus","Reaperto geral"]},{"os_id":24883,"data":"31/05","tipo":"CORRECTIVE","ativo":"TJT6C44","problemas":[]}]},{"cliente":"Gabriela Martins","qtd_os":2,"postman":true,"os_list":[{"os_id":23581,"data":"27/05","tipo":"CORRECTIVE","ativo":"TIP2A23","problemas":["Moto sem freio, verificar ambos","Retrovisor esquerdo","Moto com jogo dianteiro"]},{"os_id":24300,"data":"29/05","tipo":"FAST_REPAIR","ativo":"TIP2A23","problemas":["⚠️ Banco não está abrindo depois da última manutenção de ontem"]}]},{"cliente":"Gustavo Araujo","qtd_os":2,"postman":false,"os_list":[{"os_id":23179,"data":"26/05","tipo":"FAST_REPAIR","ativo":"92SESG005RM241414","problemas":["Ajustar paralama traseiro"]},{"os_id":24132,"data":"29/05","tipo":"CORRECTIVE","ativo":"TLK0I31","problemas":[]}]},{"cliente":"Gustavo Fernandes","qtd_os":2,"postman":false,"os_list":[{"os_id":23387,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG005TM262493","problemas":["Pastilhas de freio gastas","Verificar caixa de direção e rolamentos"]},{"os_id":24257,"data":"29/05","tipo":"CORRECTIVE_LOCO","ativo":"SVF3H31","problemas":[]}]},{"cliente":"Hygor Giacomasi Modesto","qtd_os":2,"postman":false,"os_list":[{"os_id":23525,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG009RM241200","problemas":["Verificar ambas pastilhas e discos"]},{"os_id":23597,"data":"27/05","tipo":"CORRECTIVE","ativo":"TLM2A94","problemas":["Pneu dianteiro gasto em excesso LD (defeito de fabricação)","Carenagem dianteira bastante riscada e ralada"]}]},{"cliente":"Igor Gomes","qtd_os":2,"postman":false,"os_list":[{"os_id":23393,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG007SM252196","problemas":["Roda traseira travada"]},{"os_id":23570,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG007SM252196","problemas":["Roda traseira empenada"]}]},{"cliente":"Jacson Souza","qtd_os":2,"postman":false,"os_list":[{"os_id":23145,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA913S1000562","problemas":[]},{"os_id":23152,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA913S1000562","problemas":[]}]},{"cliente":"Joao Victor","qtd_os":2,"postman":false,"os_list":[{"os_id":23462,"data":"27/05","tipo":"CORRECTIVE","ativo":"UFV5I43","problemas":["Apertar as carenagens frontais (sem parafusos)","Caixa de direção com folga","Pastilhas gastas","Verificar danos e avarias"]},{"os_id":23507,"data":"27/05","tipo":"CORRECTIVE","ativo":"UFV5I43","problemas":["Carenagens dianteira direita","Refletor dianteiro"]}]},{"cliente":"Jonas Da Silva Ribeiro Silva","qtd_os":2,"postman":false,"os_list":[{"os_id":23110,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG007RM241210","problemas":["Paralama traseiro solto","Porca na placa","Caixa de direção jogando","Pastilhas gastas","Roda traseira aparentemente empenada"]},{"os_id":23949,"data":"28/05","tipo":"CORRECTIVE","ativo":"TLD7A01","problemas":[]}]},{"cliente":"Julio Mateus","qtd_os":2,"postman":false,"os_list":[{"os_id":22943,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA910T1000066","problemas":["Pastilhas","Direção","Freio","Revisão"]},{"os_id":24017,"data":"28/05","tipo":"CORRECTIVE","ativo":"UEE1I83","problemas":["Troca pneu traseiro"]}]},{"cliente":"Klemilson Castro","qtd_os":2,"postman":false,"os_list":[{"os_id":23843,"data":"28/05","tipo":"FAST_REPAIR","ativo":"TKE7C56","problemas":[]},{"os_id":24250,"data":"29/05","tipo":"CORRECTIVE","ativo":"UGM3A44","problemas":["Cliente perdeu a chave"]}]},{"cliente":"Leandro Ribeiro","qtd_os":2,"postman":true,"os_list":[{"os_id":23564,"data":"27/05","tipo":"CORRECTIVE","ativo":"UEV1D11","problemas":[]},{"os_id":24851,"data":"30/05","tipo":"CORRECTIVE","ativo":"UEV1D11","problemas":["⚠️ Moto saiu da manutenção no dia 30/05 com o guidão completamente torto e com barulho de alguma coisa solta batendo na frente"]}]},{"cliente":"Leonardo Henrique Da Silva Dantas","qtd_os":2,"postman":false,"os_list":[{"os_id":23851,"data":"28/05","tipo":"CORRECTIVE","ativo":"TIZ5C12","problemas":["Seta esquerda","Verificar caixa de direção"]},{"os_id":24906,"data":"31/05","tipo":"CORRECTIVE","ativo":"TIZ5C12","problemas":[]}]},{"cliente":"Luan Barros De Jesus","qtd_os":2,"postman":false,"os_list":[{"os_id":23364,"data":"27/05","tipo":"CORRECTIVE","ativo":"LYSCPA910S1000437","problemas":["Paralama traseiro solto","Pneu traseiro murchando","Pastilhas gastas"]},{"os_id":24434,"data":"29/05","tipo":"FAST_REPAIR","ativo":"TJC9I24","problemas":["Mola do pezinho"]}]},{"cliente":"Nicolas Travenzoli Paulino","qtd_os":2,"postman":false,"os_list":[{"os_id":24846,"data":"30/05","tipo":"CORRECTIVE","ativo":"TJA7G13","problemas":["Parafusos da roda traseira soltando","Ajustar caixa de direção","Pastilhas de freio gastas","Moto jogando pro lado"]},{"os_id":24913,"data":"31/05","tipo":"CORRECTIVE","ativo":"TJA7G13","problemas":[]}]},{"cliente":"Pedro Faria","qtd_os":2,"postman":false,"os_list":[{"os_id":23849,"data":"28/05","tipo":"FAST_REPAIR","ativo":"UFW5I82","problemas":[]},{"os_id":23893,"data":"28/05","tipo":"CORRECTIVE","ativo":"UFW5I82","problemas":["Caixa de direção torta com a moto em movimento","Barulho grande no disco dianteiro"]}]},{"cliente":"Peter Raphael Carvalho Viana","qtd_os":2,"postman":false,"os_list":[{"os_id":22927,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG005TM262498","problemas":["Instalação do baú 90L","Pastilhas","Freio","Direção"]},{"os_id":24256,"data":"29/05","tipo":"CORRECTIVE","ativo":"QSZ5H45","problemas":["Pastilhas gastas","Verificar caixa de direção"]}]},{"cliente":"Renhold De Jesus Silva","qtd_os":2,"postman":false,"os_list":[{"os_id":24181,"data":"29/05","tipo":"CORRECTIVE","ativo":"SUD8H09","problemas":["Verificar pastilhas e discos","Luz de injeção ascende e moto para","Bateria aquecendo"]},{"os_id":24243,"data":"29/05","tipo":"FAST_REPAIR","ativo":"SUD8H09","problemas":["Trocar roda traseira (não realizar cobrança, cliente já foi cobrado)"]}]},{"cliente":"Robert Araujo Oliveira","qtd_os":2,"postman":false,"os_list":[{"os_id":23529,"data":"27/05","tipo":"FAST_REPAIR","ativo":"92SESG001TM265299","problemas":["Paralama traseiro soltando","Instalar baú 90L"]},{"os_id":24261,"data":"29/05","tipo":"FAST_REPAIR","ativo":"UDC4C31","problemas":["Retirar baú 90L"]}]},{"cliente":"Rodrigo Batista","qtd_os":2,"postman":false,"os_list":[{"os_id":23187,"data":"26/05","tipo":"CORRECTIVE_LOCO","ativo":"UFX0C95","problemas":[]},{"os_id":23190,"data":"26/05","tipo":"CORRECTIVE_LOCO","ativo":"UFX0C95","problemas":[]}]},{"cliente":"Rui Sergio","qtd_os":2,"postman":false,"os_list":[{"os_id":23140,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG001TM262832","problemas":["Trocar a tampa do motor — não foi verificado pelo diagnóstico"]},{"os_id":23986,"data":"28/05","tipo":"FAST_REPAIR","ativo":"UEX1H41","problemas":["Entrada USB com mau contato"]}]},{"cliente":"Thiago Gonçalves Madeira","qtd_os":2,"postman":false,"os_list":[{"os_id":23084,"data":"26/05","tipo":"CORRECTIVE","ativo":"LYSCPA512R1000441","problemas":["Banco da moto não abre"]},{"os_id":23119,"data":"26/05","tipo":"FAST_REPAIR","ativo":"LYSCPA512R1000441","problemas":["Banco não abre"]}]},{"cliente":"Thiago Meneses","qtd_os":2,"postman":false,"os_list":[{"os_id":23816,"data":"28/05","tipo":"CORRECTIVE","ativo":"SUI3H74","problemas":[]},{"os_id":23819,"data":"28/05","tipo":"CORRECTIVE","ativo":"SUI3H74","problemas":[]}]},{"cliente":"Tiago Morais","qtd_os":2,"postman":false,"os_list":[{"os_id":23024,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG009SM251731","problemas":["Pneu traseiro furado","Verificar pastilhas de freio"]},{"os_id":24186,"data":"29/05","tipo":"CORRECTIVE","ativo":"TLA0I86","problemas":[]}]},{"cliente":"Uallace Fonseca Da Silva","qtd_os":2,"postman":true,"os_list":[{"os_id":23128,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG007SM252065","problemas":["Alinhar carenagens da moto","Pneus furados","Seta esquerda — mal contato","Pastilhas dianteira e traseira","Caixa de direção — ajustar"]},{"os_id":23916,"data":"28/05","tipo":"CORRECTIVE","ativo":"GEW3F32","problemas":["Trocar seta dianteira esquerda","⚠️ Reincidência (indicado na OS)","Roda traseira desalinhada","Carenagem interna do banco do piloto desencaixada"]}]},{"cliente":"Victor Hugo","qtd_os":2,"postman":false,"os_list":[{"os_id":22993,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG009RM241124","problemas":["Calo na direção","Verificar freios","Carenagem lateral esquerda soltando"]},{"os_id":23391,"data":"27/05","tipo":"CORRECTIVE","ativo":"92SESG007RM241152","problemas":["Chicote superaquecendo","Moto não liga","Discos gastos","Paralama traseiro solto","Verificar caixa de direção","Roda traseira torta"]}]},{"cliente":"Wesley Luiz","qtd_os":2,"postman":false,"os_list":[{"os_id":23602,"data":"27/05","tipo":"CORRECTIVE","ativo":"UEF4H51","problemas":["Verificar ambas pastilhas","Quando freia a moto trepida","Reapertar paralama traseiro"]},{"os_id":23853,"data":"28/05","tipo":"FAST_REPAIR","ativo":"UEF4H51","problemas":["Tampa do motor caindo constantemente"]}]},{"cliente":"Yago Antunes","qtd_os":2,"postman":false,"os_list":[{"os_id":22963,"data":"26/05","tipo":"FAST_REPAIR","ativo":"92SESG007TM263810","problemas":["Caixa de direção com calo","Pastilhas gastas","Entrada USB não funciona","Suspensões baixas e com instabilidade"]},{"os_id":22974,"data":"26/05","tipo":"CORRECTIVE","ativo":"92SESG007TM263810","problemas":["Caixa de direção com calo","Carenagens frontais soltando","Entrada USB não funciona","Suspensões baixas e com instabilidade"]}]}];
+
+let activeFilter = 'all';
+const cardList = document.getElementById('cardList');
+
+// Problem tag categorization
+const TAG_RULES = [
+  { key: 'freio',       label: '🔴 Freio/Pastilhas',    cls: 'tag-freio',       re: /freio|pastilha|disco|fluido de freio/i },
+  { key: 'pneu',        label: '🟢 Pneu',               cls: 'tag-pneu',        re: /pneu|borracha|calibra/i },
+  { key: 'direcao',     label: '🔵 Caixa de Direção',   cls: 'tag-direcao',     re: /caixa de dire|dire[çc][aã]o|guidão|guid.o|calo na dire/i },
+  { key: 'carenagem',   label: '🟡 Carenagem',          cls: 'tag-carenagem',   re: /carenagem|paralama|para-lama/i },
+  { key: 'estrutura',   label: '🟤 Estrutura',          cls: 'tag-estrutura',   re: /parafuso|solt|quebr|banco|suporte|tampa|rolamento|roda|empenha|torto/i },
+  { key: 'eletrica',    label: '🟣 Elétrica',           cls: 'tag-eletrica',    re: /seta|luz|sensor|disjuntor|el[eé]tric|bateria|contato|usb|chicote|injeção|injec/i },
+  { key: 'motor',       label: '🟠 Motor/Transmissão',  cls: 'tag-motor',       re: /motor|corrente|transmiss|acelera|corta|trava|anda/i },
+  { key: 'amortecedor', label: '🌿 Amortecedor/Suspensão', cls: 'tag-amortecedor', re: /amortecedor|bengala|suspens|bengala/i },
+  { key: 'chave',       label: '🔑 Chave/Banco',        cls: 'tag-chave',       re: /chave|banco nao abre|banco não abre/i },
+  { key: 'acidente',    label: '💥 Acidente/Dano',      cls: 'tag-acidente',    re: /acidente|colisão|colisao|dano|avaria/i },
+];
+
+function getTagsForProblemas(problemas) {
+  const text = problemas.join(' ').toLowerCase();
+  const found = [];
+  const seen = new Set();
+  TAG_RULES.forEach(rule => {
+    if (!seen.has(rule.key) && rule.re.test(text)) {
+      found.push(rule);
+      seen.add(rule.key);
+    }
+  });
+  return found;
+}
+
+// Returns only tags that appear in 2+ OS for a given client
+function getRepeatedTags(os_list) {
+  const counts = {};
+  os_list.forEach(o => {
+    const tags = getTagsForProblemas(o.problemas);
+    const seen = new Set();
+    tags.forEach(t => {
+      if (!seen.has(t.key)) {
+        counts[t.key] = (counts[t.key] || 0) + 1;
+        seen.add(t.key);
+      }
+    });
+  });
+  return TAG_RULES.filter(rule => (counts[rule.key] || 0) >= 2);
+}
+
+function tagsHtml(tags) {
+  if (!tags.length) return '';
+  return '<div class="tags-row">' + tags.map(t => `<span class="tag ${t.cls}">${t.label}</span>`).join('') + '</div>';
+}
+
+function renderCards(list) {
+  cardList.innerHTML = '';
+  document.getElementById('visibleCount').textContent = list.length + ' cliente' + (list.length !== 1 ? 's' : '');
+  list.forEach((c, i) => {
+    const badgeClass = c.qtd_os >= 3 ? 'badge-3' : 'badge-2';
+    const postmanBadge = c.postman ? '<span class="badge-warn">⚠️ Pós-manutenção</span>' : '';
+    const div = document.createElement('div');
+    div.className = 'client-card';
+    div.dataset.postman = c.postman;
+    div.dataset.qtd = c.qtd_os;
+    div.dataset.cliente = c.cliente.toLowerCase();
+    // Build searchable text
+    let searchText = c.cliente.toLowerCase();
+    c.os_list.forEach(o => { searchText += ' ' + o.ativo.toLowerCase() + ' ' + o.problemas.join(' ').toLowerCase(); });
+    div.dataset.search = searchText;
+
+    // Tags that repeat across 2+ OS for this client
+    const clientTags = getRepeatedTags(c.os_list);
+
+    let osHtml = '';
+    c.os_list.forEach(o => {
+      const osTags = getTagsForProblemas(o.problemas);
+      const probleHtml = o.problemas.length
+        ? '<ul>' + o.problemas.map(p => {
+            const isWarn = p.startsWith('⚠️');
+            return `<li class="${isWarn ? 'warn-item' : ''}">${p}</li>`;
+          }).join('') + '</ul>'
+        : '<span class="empty">— sem descrição registrada</span>';
+      osHtml += `<div class="os-item">
+        <div class="os-meta">
+          <span class="os-id">#${o.os_id}</span>
+          <span class="os-date">📅 ${o.data}</span>
+          <span class="os-ativo">${o.ativo}</span>
+          <span class="os-tipo tipo-${o.tipo}">${o.tipo.replace('_',' ')}</span>
+          ${osTags.length ? osTags.map(t=>`<span class="tag ${t.cls}">${t.label}</span>`).join('') : ''}
+        </div>
+        <div class="os-problems">${probleHtml}</div>
+      </div>`;
+    });
+
+    div.innerHTML = `
+      <div class="client-header" onclick="toggle(this)">
+        <div style="flex:1;min-width:0">
+          <div class="client-name">${c.cliente}</div>
+          ${clientTags.length ? tagsHtml(clientTags) : ''}
+        </div>
+        ${postmanBadge}
+        <span class="badge-qtd ${badgeClass}">${c.qtd_os} OS</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="os-list">${osHtml}</div>`;
+    cardList.appendChild(div);
+  });
+}
+
+function toggle(header) {
+  const list = header.nextElementSibling;
+  const ch = header.querySelector('.chevron');
+  const open = list.style.display === 'block';
+  list.style.display = open ? 'none' : 'block';
+  ch.classList.toggle('open', !open);
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = clientes;
+  if (activeFilter === '3') list = list.filter(c => c.qtd_os >= 3);
+  else if (activeFilter === '2') list = list.filter(c => c.qtd_os === 2);
+  else if (activeFilter === 'postman') list = list.filter(c => c.postman);
+  if (q) list = list.filter(c => {
+    let t = c.cliente.toLowerCase();
+    c.os_list.forEach(o => { t += ' ' + o.ativo.toLowerCase() + ' ' + o.problemas.join(' ').toLowerCase(); });
+    return t.includes(q);
+  });
+  renderCards(list);
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+renderCards(clientes);
+
+// === DYNAMIC DASHBOARD DATA ===
+const dailyData = [{"d": "2026-04-30", "total": 8, "corr": 6, "clients": 6, "cat": {"Freio/Pastilhas": 1, "Carenagem/Estrutura": 3, "Caixa de direção": 0, "Pneu": 0, "Elétrica": 2, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 8, "Osasco": 0, "SBC": 0}, "backlog": 0, "backlog_local": {"Mooca 1": 0, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 5, "FAST_REPAIR": 1}}, {"d": "2026-05-01", "total": 68, "corr": 31, "clients": 55, "cat": {"Freio/Pastilhas": 6, "Carenagem/Estrutura": 4, "Caixa de direção": 1, "Pneu": 1, "Elétrica": 17, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 68, "Osasco": 0, "SBC": 0}, "backlog": 0, "backlog_local": {"Mooca 1": 0, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 29, "FAST_REPAIR": 2}}, {"d": "2026-05-02", "total": 130, "corr": 59, "clients": 111, "cat": {"Freio/Pastilhas": 27, "Carenagem/Estrutura": 9, "Caixa de direção": 5, "Pneu": 5, "Elétrica": 9, "Motor/Transmissão": 0, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 130, "Osasco": 0, "SBC": 0}, "backlog": 0, "backlog_local": {"Mooca 1": 0, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 58, "FAST_REPAIR": 1}}, {"d": "2026-05-03", "total": 44, "corr": 15, "clients": 44, "cat": {"Freio/Pastilhas": 5, "Carenagem/Estrutura": 5, "Caixa de direção": 0, "Pneu": 1, "Elétrica": 4, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 44, "Osasco": 0, "SBC": 0}, "backlog": 0, "backlog_local": {"Mooca 1": 0, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 12, "FAST_REPAIR": 3}}, {"d": "2026-05-04", "total": 258, "corr": 132, "clients": 201, "cat": {"Freio/Pastilhas": 62, "Carenagem/Estrutura": 25, "Caixa de direção": 4, "Pneu": 10, "Elétrica": 25, "Motor/Transmissão": 0, "Chave/Banco": 1, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 245, "Osasco": 13, "SBC": 0}, "backlog": 9, "backlog_local": {"Mooca 1": 1, "Osasco": 8, "SBC": 0}, "tipos": {"CORRECTIVE": 119, "FAST_REPAIR": 13}}, {"d": "2026-05-05", "total": 248, "corr": 151, "clients": 186, "cat": {"Freio/Pastilhas": 74, "Carenagem/Estrutura": 23, "Caixa de direção": 6, "Pneu": 8, "Elétrica": 27, "Motor/Transmissão": 1, "Chave/Banco": 4, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 210, "Osasco": 9, "SBC": 29}, "backlog": 2, "backlog_local": {"Mooca 1": 2, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 139, "FAST_REPAIR": 12}}, {"d": "2026-05-06", "total": 298, "corr": 163, "clients": 233, "cat": {"Freio/Pastilhas": 76, "Carenagem/Estrutura": 21, "Caixa de direção": 4, "Pneu": 10, "Elétrica": 33, "Motor/Transmissão": 0, "Chave/Banco": 1, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 272, "Osasco": 2, "SBC": 24}, "backlog": 4, "backlog_local": {"Mooca 1": 4, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 139, "CORRECTIVE_LOCO": 15, "FAST_REPAIR": 9}}, {"d": "2026-05-07", "total": 319, "corr": 188, "clients": 256, "cat": {"Freio/Pastilhas": 105, "Carenagem/Estrutura": 26, "Caixa de direção": 9, "Pneu": 11, "Elétrica": 33, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 201, "Osasco": 83, "SBC": 35}, "backlog": 2, "backlog_local": {"Mooca 1": 2, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 177, "FAST_REPAIR": 11}}, {"d": "2026-05-08", "total": 313, "corr": 177, "clients": 268, "cat": {"Freio/Pastilhas": 92, "Carenagem/Estrutura": 28, "Caixa de direção": 6, "Pneu": 10, "Elétrica": 35, "Motor/Transmissão": 0, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 206, "Osasco": 75, "SBC": 32}, "backlog": 4, "backlog_local": {"Mooca 1": 3, "Osasco": 1, "SBC": 0}, "tipos": {"CORRECTIVE": 161, "FAST_REPAIR": 16}}, {"d": "2026-05-09", "total": 104, "corr": 69, "clients": 100, "cat": {"Freio/Pastilhas": 23, "Carenagem/Estrutura": 13, "Caixa de direção": 3, "Pneu": 3, "Elétrica": 22, "Motor/Transmissão": 1, "Chave/Banco": 4, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 81, "Osasco": 23, "SBC": 0}, "backlog": 2, "backlog_local": {"Mooca 1": 1, "Osasco": 1, "SBC": 0}, "tipos": {"CORRECTIVE": 63, "FAST_REPAIR": 6}}, {"d": "2026-05-10", "total": 44, "corr": 28, "clients": 43, "cat": {"Freio/Pastilhas": 2, "Carenagem/Estrutura": 4, "Caixa de direção": 3, "Pneu": 7, "Elétrica": 12, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 43, "Osasco": 1, "SBC": 0}, "backlog": 1, "backlog_local": {"Mooca 1": 1, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 28}}, {"d": "2026-05-11", "total": 337, "corr": 187, "clients": 283, "cat": {"Freio/Pastilhas": 90, "Carenagem/Estrutura": 27, "Caixa de direção": 9, "Pneu": 4, "Elétrica": 48, "Motor/Transmissão": 0, "Chave/Banco": 2, "Amortecedor/Suspensão": 1}, "by_local": {"Mooca 1": 194, "Osasco": 107, "SBC": 36}, "backlog": 3, "backlog_local": {"Mooca 1": 1, "Osasco": 2, "SBC": 0}, "tipos": {"CORRECTIVE": 167, "FAST_REPAIR": 19, "CORRECTIVE_LOCO": 1}}, {"d": "2026-05-12", "total": 325, "corr": 188, "clients": 256, "cat": {"Freio/Pastilhas": 91, "Carenagem/Estrutura": 35, "Caixa de direção": 15, "Pneu": 11, "Elétrica": 21, "Motor/Transmissão": 6, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 219, "Osasco": 67, "SBC": 39}, "backlog": 3, "backlog_local": {"Mooca 1": 3, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 177, "FAST_REPAIR": 7, "CORRECTIVE_LOCO": 4}}, {"d": "2026-05-13", "total": 344, "corr": 167, "clients": 255, "cat": {"Freio/Pastilhas": 79, "Carenagem/Estrutura": 29, "Caixa de direção": 8, "Pneu": 13, "Elétrica": 27, "Motor/Transmissão": 0, "Chave/Banco": 2, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 222, "Osasco": 87, "SBC": 35}, "backlog": 1, "backlog_local": {"Mooca 1": 1, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 148, "FAST_REPAIR": 19}}, {"d": "2026-05-14", "total": 346, "corr": 178, "clients": 266, "cat": {"Freio/Pastilhas": 92, "Carenagem/Estrutura": 28, "Caixa de direção": 5, "Pneu": 8, "Elétrica": 37, "Motor/Transmissão": 0, "Chave/Banco": 1, "Amortecedor/Suspensão": 1}, "by_local": {"Mooca 1": 198, "Osasco": 94, "SBC": 54}, "backlog": 3, "backlog_local": {"Mooca 1": 2, "Osasco": 1, "SBC": 0}, "tipos": {"CORRECTIVE": 166, "FAST_REPAIR": 12}}, {"d": "2026-05-15", "total": 263, "corr": 124, "clients": 221, "cat": {"Freio/Pastilhas": 57, "Carenagem/Estrutura": 22, "Caixa de direção": 1, "Pneu": 6, "Elétrica": 32, "Motor/Transmissão": 0, "Chave/Banco": 2, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 157, "Osasco": 71, "SBC": 35}, "backlog": 2, "backlog_local": {"Mooca 1": 2, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 113, "FAST_REPAIR": 11}}, {"d": "2026-05-16", "total": 96, "corr": 45, "clients": 82, "cat": {"Freio/Pastilhas": 21, "Carenagem/Estrutura": 2, "Caixa de direção": 3, "Pneu": 4, "Elétrica": 15, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 58, "Osasco": 38, "SBC": 0}, "backlog": 0, "backlog_local": {"Mooca 1": 0, "Osasco": 0, "SBC": 0}, "tipos": {"CORRECTIVE": 42, "FAST_REPAIR": 3}}, {"d": "2026-05-18", "total": 398, "corr": 196, "clients": 327, "cat": {"Freio/Pastilhas": 100, "Carenagem/Estrutura": 29, "Caixa de direção": 4, "Pneu": 9, "Elétrica": 36, "Motor/Transmissão": 0, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 191, "Osasco": 152, "SBC": 55}, "backlog": 13, "backlog_local": {"Mooca 1": 4, "Osasco": 9, "SBC": 0}, "tipos": {"CORRECTIVE": 187, "FAST_REPAIR": 9}}, {"d": "2026-05-19", "total": 389, "corr": 187, "clients": 327, "cat": {"Freio/Pastilhas": 101, "Carenagem/Estrutura": 24, "Caixa de direção": 8, "Pneu": 10, "Elétrica": 28, "Motor/Transmissão": 2, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 207, "Osasco": 128, "SBC": 54}, "backlog": 8, "backlog_local": {"Mooca 1": 1, "Osasco": 7, "SBC": 0}, "tipos": {"CORRECTIVE": 179, "FAST_REPAIR": 8}}, {"d": "2026-05-20", "total": 294, "corr": 163, "clients": 254, "cat": {"Freio/Pastilhas": 71, "Carenagem/Estrutura": 28, "Caixa de direção": 6, "Pneu": 15, "Elétrica": 34, "Motor/Transmissão": 0, "Chave/Banco": 1, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 184, "Osasco": 64, "SBC": 46}, "backlog": 2, "backlog_local": {"Mooca 1": 0, "Osasco": 1, "SBC": 1}, "tipos": {"CORRECTIVE": 143, "CORRECTIVE_LOCO": 11, "FAST_REPAIR": 9}}, {"d": "2026-05-21", "total": 334, "corr": 160, "clients": 263, "cat": {"Freio/Pastilhas": 91, "Carenagem/Estrutura": 11, "Caixa de direção": 6, "Pneu": 6, "Elétrica": 20, "Motor/Transmissão": 1, "Chave/Banco": 6, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 170, "Osasco": 135, "SBC": 29}, "backlog": 12, "backlog_local": {"Mooca 1": 3, "Osasco": 9, "SBC": 0}, "tipos": {"CORRECTIVE": 141, "FAST_REPAIR": 13, "CORRECTIVE_LOCO": 6}}, {"d": "2026-05-22", "total": 283, "corr": 145, "clients": 241, "cat": {"Freio/Pastilhas": 47, "Carenagem/Estrutura": 18, "Caixa de direção": 3, "Pneu": 7, "Elétrica": 28, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 190, "Osasco": 53, "SBC": 40}, "backlog": 12, "backlog_local": {"Mooca 1": 10, "Osasco": 2, "SBC": 0}, "tipos": {"CORRECTIVE": 107, "CORRECTIVE_LOCO": 29, "FAST_REPAIR": 9}}, {"d": "2026-05-23", "total": 113, "corr": 39, "clients": 99, "cat": {"Freio/Pastilhas": 19, "Carenagem/Estrutura": 9, "Caixa de direção": 0, "Pneu": 1, "Elétrica": 8, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 66, "Osasco": 47, "SBC": 0}, "backlog": 8, "backlog_local": {"Mooca 1": 6, "Osasco": 2, "SBC": 0}, "tipos": {"CORRECTIVE": 34, "FAST_REPAIR": 5}}, {"d": "2026-05-25", "total": 387, "corr": 239, "clients": 331, "cat": {"Freio/Pastilhas": 101, "Carenagem/Estrutura": 36, "Caixa de direção": 8, "Pneu": 14, "Elétrica": 51, "Motor/Transmissão": 1, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 210, "Osasco": 106, "SBC": 71}, "backlog": 22, "backlog_local": {"Mooca 1": 8, "Osasco": 11, "SBC": 3}, "tipos": {"CORRECTIVE": 194, "FAST_REPAIR": 28, "CORRECTIVE_LOCO": 17}}, {"d": "2026-05-26", "total": 416, "corr": 198, "clients": 316, "cat": {"Freio/Pastilhas": 103, "Carenagem/Estrutura": 41, "Caixa de direção": 7, "Pneu": 7, "Elétrica": 24, "Motor/Transmissão": 0, "Chave/Banco": 2, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 173, "Osasco": 193, "SBC": 50}, "backlog": 21, "backlog_local": {"Mooca 1": 3, "Osasco": 15, "SBC": 3}, "tipos": {"CORRECTIVE": 170, "FAST_REPAIR": 23, "CORRECTIVE_LOCO": 5}}, {"d": "2026-05-27", "total": 347, "corr": 185, "clients": 282, "cat": {"Freio/Pastilhas": 101, "Carenagem/Estrutura": 15, "Caixa de direção": 6, "Pneu": 7, "Elétrica": 25, "Motor/Transmissão": 0, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 188, "Osasco": 106, "SBC": 53}, "backlog": 27, "backlog_local": {"Mooca 1": 15, "Osasco": 12, "SBC": 0}, "tipos": {"CORRECTIVE": 171, "FAST_REPAIR": 12, "CORRECTIVE_LOCO": 2}}, {"d": "2026-05-28", "total": 326, "corr": 160, "clients": 255, "cat": {"Freio/Pastilhas": 46, "Carenagem/Estrutura": 23, "Caixa de direção": 7, "Pneu": 5, "Elétrica": 15, "Motor/Transmissão": 2, "Chave/Banco": 2, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 183, "Osasco": 88, "SBC": 55}, "backlog": 30, "backlog_local": {"Mooca 1": 15, "Osasco": 14, "SBC": 1}, "tipos": {"CORRECTIVE": 145, "FAST_REPAIR": 12, "CORRECTIVE_LOCO": 3}}, {"d": "2026-05-29", "total": 328, "corr": 172, "clients": 276, "cat": {"Freio/Pastilhas": 50, "Carenagem/Estrutura": 24, "Caixa de direção": 10, "Pneu": 3, "Elétrica": 19, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 147, "Osasco": 138, "SBC": 43}, "backlog": 46, "backlog_local": {"Mooca 1": 18, "Osasco": 23, "SBC": 5}, "tipos": {"CORRECTIVE": 152, "FAST_REPAIR": 15, "CORRECTIVE_LOCO": 5}}, {"d": "2026-05-30", "total": 97, "corr": 45, "clients": 85, "cat": {"Freio/Pastilhas": 13, "Carenagem/Estrutura": 10, "Caixa de direção": 3, "Pneu": 5, "Elétrica": 8, "Motor/Transmissão": 0, "Chave/Banco": 2, "Amortecedor/Suspensão": 1}, "by_local": {"Mooca 1": 71, "Osasco": 26, "SBC": 0}, "backlog": 37, "backlog_local": {"Mooca 1": 28, "Osasco": 9, "SBC": 0}, "tipos": {"CORRECTIVE": 40, "FAST_REPAIR": 5}}, {"d": "2026-05-31", "total": 34, "corr": 20, "clients": 34, "cat": {"Freio/Pastilhas": 0, "Carenagem/Estrutura": 2, "Caixa de direção": 1, "Pneu": 1, "Elétrica": 11, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 33, "Osasco": 1, "SBC": 0}, "backlog": 19, "backlog_local": {"Mooca 1": 18, "Osasco": 1, "SBC": 0}, "tipos": {"CORRECTIVE": 20}}, {"d": "2026-06-01", "total": 350, "corr": 195, "clients": 288, "cat": {"Freio/Pastilhas": 51, "Carenagem/Estrutura": 17, "Caixa de direção": 5, "Pneu": 13, "Elétrica": 30, "Motor/Transmissão": 0, "Chave/Banco": 4, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 181, "Osasco": 96, "SBC": 73}, "backlog": 94, "backlog_local": {"Mooca 1": 62, "Osasco": 22, "SBC": 10}, "tipos": {"CORRECTIVE": 171, "FAST_REPAIR": 24}}, {"d": "2026-06-02", "total": 383, "corr": 189, "clients": 313, "cat": {"Freio/Pastilhas": 68, "Carenagem/Estrutura": 14, "Caixa de direção": 2, "Pneu": 10, "Elétrica": 24, "Motor/Transmissão": 0, "Chave/Banco": 3, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 153, "Osasco": 156, "SBC": 74}, "backlog": 149, "backlog_local": {"Mooca 1": 72, "Osasco": 65, "SBC": 12}, "tipos": {"CORRECTIVE": 177, "FAST_REPAIR": 8, "CORRECTIVE_LOCO": 4}}, {"d": "2026-06-03", "total": 105, "corr": 67, "clients": 99, "cat": {"Freio/Pastilhas": 19, "Carenagem/Estrutura": 4, "Caixa de direção": 0, "Pneu": 2, "Elétrica": 7, "Motor/Transmissão": 0, "Chave/Banco": 0, "Amortecedor/Suspensão": 0}, "by_local": {"Mooca 1": 40, "Osasco": 50, "SBC": 15}, "backlog": 81, "backlog_local": {"Mooca 1": 37, "Osasco": 35, "SBC": 9}, "tipos": {"CORRECTIVE": 65, "CORRECTIVE_LOCO": 2}}];
+
+const weeklyReincid = {"2026-04-27": {"r": 3, "os": 111, "taxa": 2.7}, "2026-05-04": {"r": 75, "os": 908, "taxa": 8.3}, "2026-05-11": {"r": 73, "os": 889, "taxa": 8.2}, "2026-05-18": {"r": 64, "os": 890, "taxa": 7.2}, "2026-05-25": {"r": 87, "os": 1019, "taxa": 8.5}, "2026-06-01": {"r": 24, "os": 451, "taxa": 5.3}};
+
+const charts = {};
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+const allDates = dailyData.map(d => d.d);
+const minDate = allDates[0], maxDate = allDates[allDates.length - 1];
+
+function initDateInputs() {
+  document.getElementById('dateFrom').value = minDate;
+  document.getElementById('dateTo').value = maxDate;
+  document.getElementById('dateFrom').min = minDate;
+  document.getElementById('dateFrom').max = maxDate;
+  document.getElementById('dateTo').min = minDate;
+  document.getElementById('dateTo').max = maxDate;
+}
+
+const presets = {
+  all: [minDate, maxDate],
+  w1: ['2026-05-04','2026-05-10'],
+  w2: ['2026-05-11','2026-05-17'],
+  w3: ['2026-05-18','2026-05-24'],
+  w4: ['2026-05-25','2026-05-31'],
+  w5: ['2026-06-01','2026-06-03'],
+};
+
+function setDatePreset(key, btn) {
+  document.querySelectorAll('#view-dash .btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const [from, to] = presets[key];
+  document.getElementById('dateFrom').value = from;
+  document.getElementById('dateTo').value = to;
+  updateDash();
+}
+
+function getFilteredDays() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  return dailyData.filter(d => d.d >= from && d.d <= to);
+}
+
+function fmtDate(s) {
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}`;
+}
+
+function updateDash() {
+  const days = getFilteredDays();
+  if (!days.length) return;
+
+  // KPIs
+  const totalOS = days.reduce((a,d) => a + d.total, 0);
+  const totalCorr = days.reduce((a,d) => a + d.corr, 0);
+  const totalBacklog = days[days.length-1].backlog; // last day snapshot
+  const catTotals = {};
+  days.forEach(d => { Object.entries(d.cat).forEach(([k,v]) => { catTotals[k] = (catTotals[k]||0)+v; }); });
+  const topCat = Object.entries(catTotals).sort((a,b)=>b[1]-a[1])[0];
+
+  // Weekly reincidence within range
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  let reinc = 0, reincOS = 0;
+  Object.entries(weeklyReincid).forEach(([wk, v]) => {
+    if (wk >= from || wk <= to) { reinc += v.r; reincOS += v.os; }
+  });
+  const taxa = reincOS > 0 ? (reinc/reincOS*100).toFixed(1) : 0;
+
+  const totalClients = days.reduce((a,d) => a + d.clients, 0);
+  document.getElementById('kpi-total').textContent = totalOS.toLocaleString('pt-BR');
+  document.getElementById('kpi-corr').textContent = totalCorr.toLocaleString('pt-BR');
+  document.getElementById('kpi-clients').textContent = totalClients.toLocaleString('pt-BR');
+  document.getElementById('kpi-taxa').textContent = taxa + '%';
+  document.getElementById('kpi-os-reincid').textContent = reinc;
+  document.getElementById('kpi-backlog').textContent = totalBacklog;
+
+  // Chart: OS por dia
+  destroyChart('chartDias');
+  charts['chartDias'] = new Chart(document.getElementById('chartDias'), {
+    type: 'bar',
+    data: {
+      labels: days.map(d => fmtDate(d.d)),
+      datasets: [
+        {label:'Total OS', data: days.map(d=>d.total), backgroundColor:'#457b9d', borderRadius:3},
+        {label:'Corretivas', data: days.map(d=>d.corr), backgroundColor:'#e63946', borderRadius:3}
+      ]
+    },
+    options: { plugins: { legend: { position:'bottom', labels:{font:{size:10},boxWidth:12} } }, scales: { x:{grid:{display:false},ticks:{font:{size:9}}}, y:{grid:{display:false}} } }
+  });
+
+  // Chart: Problemas
+  const cats = Object.keys(catTotals);
+  const vals = Object.values(catTotals);
+  const catColors = ['#e63946','#f4a261','#2a9d8f','#457b9d','#6a4c93','#1d3557','#e9c46a','#264653'];
+  destroyChart('chartProblemas');
+  charts['chartProblemas'] = new Chart(document.getElementById('chartProblemas'), {
+    type: 'bar',
+    data: { labels: cats, datasets: [{ data: vals, backgroundColor: catColors, borderRadius: 4 }] },
+    options: { indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}} }
+  });
+
+  // Chart: Por unidade
+  const locals = ['Mooca 1','Osasco','SBC'];
+  const localColors = ['#457b9d','#f4a261','#2a9d8f'];
+  destroyChart('chartUnidade');
+  charts['chartUnidade'] = new Chart(document.getElementById('chartUnidade'), {
+    type: 'bar',
+    data: {
+      labels: days.map(d => fmtDate(d.d)),
+      datasets: locals.map((l,i) => ({
+        label: l,
+        data: days.map(d => d.by_local[l]||0),
+        backgroundColor: localColors[i],
+        borderRadius: 2
+      }))
+    },
+    options: { plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}, scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},y:{stacked:true,grid:{display:false}}} }
+  });
+
+  // Chart: Backlog por dia
+  destroyChart('chartBacklog');
+  charts['chartBacklog'] = new Chart(document.getElementById('chartBacklog'), {
+    type: 'line',
+    data: {
+      labels: days.map(d => fmtDate(d.d)),
+      datasets: locals.map((l,i) => ({
+        label: l,
+        data: days.map(d => d.backlog_local[l]||0),
+        borderColor: localColors[i],
+        backgroundColor: localColors[i]+'33',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2
+      }))
+    },
+    options: { plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}, scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{display:false}}} }
+  });
+
+  // Chart: Tipos de OS
+  const tipoTotals = {};
+  days.forEach(d => { Object.entries(d.tipos).forEach(([k,v]) => { tipoTotals[k]=(tipoTotals[k]||0)+v; }); });
+  destroyChart('chartTipos');
+  charts['chartTipos'] = new Chart(document.getElementById('chartTipos'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(tipoTotals),
+      datasets: [{ data: Object.values(tipoTotals), backgroundColor: ['#457b9d','#e63946','#f4a261','#2a9d8f'], borderWidth:2 }]
+    },
+    options: { plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}, cutout:'55%' }
+  });
+
+  // Chart: Tipo de problema com maior reincidência (baseado nos 51 casos)
+  // Count how many clients have each tag repeated across their OS
+  const reincidCatCount = {};
+  const reincidCatClients = {}; // total clients that had this tag at all
+  TAG_RULES.forEach(r => { reincidCatCount[r.key] = 0; reincidCatClients[r.key] = 0; });
+  clientes.forEach(c => {
+    const repeated = getRepeatedTags(c.os_list);
+    const any = new Set();
+    c.os_list.forEach(o => getTagsForProblemas(o.problemas).forEach(t => any.add(t.key)));
+    repeated.forEach(t => { reincidCatCount[t.key]++; });
+    any.forEach(k => { reincidCatClients[k]++; });
+  });
+  // Build sorted entries (only categories with at least 1 repeated occurrence)
+  const rcEntries = TAG_RULES
+    .map(r => ({ label: r.label, cls: r.cls, repeated: reincidCatCount[r.key], total: reincidCatClients[r.key] }))
+    .filter(e => e.repeated > 0)
+    .sort((a, b) => b.repeated - a.repeated);
+  destroyChart('chartReincidCat');
+  charts['chartReincidCat'] = new Chart(document.getElementById('chartReincidCat'), {
+    type: 'bar',
+    data: {
+      labels: rcEntries.map(e => e.label),
+      datasets: [
+        {
+          label: 'Clientes com problema repetido',
+          data: rcEntries.map(e => e.repeated),
+          backgroundColor: '#e63946',
+          borderRadius: 4
+        },
+        {
+          label: 'Clientes com problema (qualquer OS)',
+          data: rcEntries.map(e => e.total),
+          backgroundColor: '#f4a26155',
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            afterLabel: ctx => {
+              const e = rcEntries[ctx.dataIndex];
+              if (ctx.datasetIndex === 0) return `Taxa: ${e.total > 0 ? Math.round(e.repeated/e.total*100) : 0}% dos que tiveram esse problema`;
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Chart: Reincidência semanal (taxa %)
+  const wkEntries = Object.entries(weeklyReincid).filter(([wk]) => {
+    const wkEnd = new Date(wk); wkEnd.setDate(wkEnd.getDate()+6);
+    const wkEndStr = wkEnd.toISOString().slice(0,10);
+    return wk <= to && wkEndStr >= from;
+  });
+  destroyChart('chartPizza');
+  charts['chartPizza'] = new Chart(document.getElementById('chartPizza'), {
+    type: 'bar',
+    data: {
+      labels: wkEntries.map(([wk]) => 'Sem '+fmtDate(wk)),
+      datasets: [
+        {label:'Taxa Reinc. %', data: wkEntries.map(([,v])=>v.taxa), backgroundColor:'#e63946', borderRadius:4, yAxisID:'y1'},
+        {label:'Reincidentes', data: wkEntries.map(([,v])=>v.r), backgroundColor:'#f4a261', borderRadius:4, yAxisID:'y2'}
+      ]
+    },
+    options: {
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:10}}},
+        y1:{type:'linear',position:'left',grid:{display:false},title:{display:true,text:'%',font:{size:10}}},
+        y2:{type:'linear',position:'right',grid:{display:false},title:{display:true,text:'clientes',font:{size:10}}}
+      }
+    }
+  });
+}
+
+// Tab switching
+function switchTab(id, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'backlog') initBacklogCharts();
+}
+
+// Backlog charts
+let backlogChartsInited = false;
+function initBacklogCharts() {
+  if (backlogChartsInited) return;
+  backlogChartsInited = true;
+
+  const statusColors = {
+    'Open': '#e63946', 'Ag. CX': '#f4a261', 'Em andamento': '#2a9d8f',
+    'Ag. Peças': '#6a4c93', 'Ag. Gestão': '#457b9d', 'Ag. Serviço': '#e9c46a',
+    'Ag. Mecânico': '#264653', 'Pausado': '#adb5bd', 'Outros': '#dee2e6'
+  };
+
+  function donutUnit(id, data) {
+    new Chart(document.getElementById(id), {
+      type: 'doughnut',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [{ data: data.map(d => d.v), backgroundColor: data.map(d => d.color), borderWidth: 2 }]
+      },
+      options: { plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12, padding: 6 } } }, cutout: '60%' }
+    });
+  }
+
+  donutUnit('chartMooca', [
+    {label:'Open',v:116,color:'#e63946'},{label:'Ag. CX',v:110,color:'#f4a261'},
+    {label:'Em andamento',v:20,color:'#2a9d8f'},{label:'Ag. Peças',v:21,color:'#6a4c93'},
+    {label:'Ag. Gestão',v:15,color:'#457b9d'},{label:'Ag. Serviço',v:12,color:'#e9c46a'},
+    {label:'Ag. Mecânico',v:15,color:'#264653'},{label:'Pausado',v:11,color:'#adb5bd'},
+    {label:'Outros',v:3,color:'#dee2e6'}
+  ]);
+  donutUnit('chartOsasco', [
+    {label:'Open',v:40,color:'#e63946'},{label:'Ag. CX',v:105,color:'#f4a261'},
+    {label:'Em andamento',v:22,color:'#2a9d8f'},{label:'Ag. Peças',v:41,color:'#6a4c93'},
+    {label:'Ag. Gestão',v:18,color:'#457b9d'},{label:'Ag. Serviço',v:6,color:'#e9c46a'},
+    {label:'Ag. Mecânico',v:9,color:'#264653'},{label:'Pausado',v:9,color:'#adb5bd'}
+  ]);
+  donutUnit('chartSBC', [
+    {label:'Open',v:4,color:'#e63946'},{label:'Ag. CX',v:13,color:'#f4a261'},
+    {label:'Em andamento',v:4,color:'#2a9d8f'},{label:'Ag. Peças',v:19,color:'#6a4c93'},
+    {label:'Pausado',v:3,color:'#adb5bd'},{label:'Outros',v:1,color:'#dee2e6'}
+  ]);
+
+  // Tipo de OS por unidade (stacked bar)
+  new Chart(document.getElementById('chartTipoBacklog'), {
+    type: 'bar',
+    data: {
+      labels: ['Mooca 1', 'Osasco', 'Eletroposto SBC'],
+      datasets: [
+        {label:'Corretivas', data:[169,114,32], backgroundColor:'#e63946', borderRadius:2},
+        {label:'Inspeção Retorno', data:[131,119,11], backgroundColor:'#f4a261', borderRadius:2},
+        {label:'Instalação', data:[7,1,1], backgroundColor:'#2a9d8f', borderRadius:2},
+        {label:'Seguro/Outros', data:[16,16,0], backgroundColor:'#adb5bd', borderRadius:2},
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { font:{size:11}, boxWidth:12 } } },
+      scales: { x: { stacked:true, grid:{display:false} }, y: { stacked:true, grid:{display:false} } }
+    }
+  });
+
+  // Gargalos por status (grouped)
+  new Chart(document.getElementById('chartGargalo'), {
+    type: 'bar',
+    data: {
+      labels: ['Ag. CX','Ag. Peças','Open','Em andamento','Ag. Gestão','Ag. Mecânico'],
+      datasets: [
+        {label:'Mooca 1', data:[110,21,116,20,15,15], backgroundColor:'#457b9d'},
+        {label:'Osasco', data:[105,41,40,22,18,9], backgroundColor:'#f4a261'},
+        {label:'SBC', data:[13,19,4,4,0,0], backgroundColor:'#2a9d8f'},
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { font:{size:11}, boxWidth:12 } } },
+      scales: { x: { grid:{display:false} }, y: { grid:{display:false} } }
+    }
+  });
+}
+
+// Modal
+function openModal() {
+  const m = document.getElementById('modal-overlay');
+  m.style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+}
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init dashboard on load
+initDateInputs();
+updateDash();
+</script>
+</body>
+</html>
